@@ -4,6 +4,7 @@ import numpy as np
 from nltk.cluster.util import cosine_distance
 import networkx as nx
 import matplotlib.pyplot as plt
+from nltk.stem import PorterStemmer
 
 
 class NlpEngineStart:
@@ -33,10 +34,14 @@ class NlpEngineStart:
 
 
         sentence_similarity_graph = nx.from_numpy_array(similarity_matrix)
-        eigval, eigvector = np.linalg.eig(similarity_matrix)
-        dominant_eigval = np.abs(eigval).max()
+        #eigval, eigvector = np.linalg.eig(similarity_matrix)
+        #dominant_eigval = np.abs(eigval).max()
+        #print("eiganVal",eigval)
+        #print("eigvector",eigvector)
+        #print("dominat_eigval",dominant_eigval)
         #self.scores = np.where(eigval == dominant_eigval)
         self.scores = nx.pagerank(sentence_similarity_graph)
+        print("score",self.scores)
         nx.draw(sentence_similarity_graph,with_labels = True)
         plt.savefig("G:/filename.png")
 
@@ -44,10 +49,9 @@ class NlpEngineStart:
     def sentence_similarity(self,sent1, sent2, stopwords=None):
         if stopwords is None:
             stopwords = []
-
-        sent1 = [w.lower() for w in sent1]
-        sent2 = [w.lower() for w in sent2]
-
+        stemmer = PorterStemmer()
+        sent1 = [stemmer.stem(w.lower())for w in sent1]
+        sent2 = [stemmer.stem(w.lower()) for w in sent2]
         all_words = list(set(sent1 + sent2))
 
         vector1 = [0] * len(all_words)
