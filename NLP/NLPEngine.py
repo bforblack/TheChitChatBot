@@ -1,22 +1,35 @@
 from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
+
 import numpy as np
 from nltk.cluster.util import cosine_distance
 import networkx as nx
 import matplotlib.pyplot as plt
 from nltk.stem import PorterStemmer
+from NLP import NLP_Language_Identifier as language
 
 
 class NlpEngineStart:
     def __init__(self,data):
+        self.orignalData=data
         self.clean(data)
 
     def clean(self,Data):
         self.cleanData = []
-        Data=Data.split(". ")
-        for d in Data:
-            self.cleanData.append(d.replace("[^a-zA-Z]", " ").split(" "))
-        self.generateSimilarity_matrix(self.cleanData)
+        self.__langu, self.stop_words = language.languageDetector(self.orignalData)
+        print("language",self.__langu)
+        if self.__langu=="english":
+            Data = Data.split(". ")
+            for d in Data:
+                self.cleanData.append(d.replace("[^a-zA-Z]", " ").split(" "))
+            self.generateSimilarity_matrix(self.cleanData)
+
+        elif self.__langu=="hi":
+            Data = Data.split("। ")
+            print(Data)
+            for d in Data:
+                self.cleanData.append(d.replace("[\u0900\u0901\u0902 ... \u097D\u097E\u097F]", " ").split(" "))
+            print(self.cleanData)
+            self.generateSimilarity_matrix(self.cleanData)
 
 
     def generateSimilarity_matrix(self,cleanData_List):
@@ -24,13 +37,16 @@ class NlpEngineStart:
         similarity_matrix = np.zeros((len(cleanData_List), len(cleanData_List)))
         #working only for english will soon support multi Langugaes
 
-        stop_words=stopwords.words('english')
+        #language = self.languageDetector(cleanData_List)
+
+        #stop_words=stopwords.words('english')
+
 
         for idx1 in range(len(cleanData_List)):
             for idx2 in range(len(cleanData_List)):
                 if idx1 == idx2:  # ignore if both are same sentences
                     continue
-                similarity_matrix[idx1][idx2] = self.sentence_similarity(cleanData_List[idx1], cleanData_List[idx2],stop_words)
+                similarity_matrix[idx1][idx2] = self.sentence_similarity(cleanData_List[idx1], cleanData_List[idx2],self.stop_words)
 
 
         sentence_similarity_graph = nx.from_numpy_array(similarity_matrix)
@@ -82,6 +98,7 @@ class NlpEngineStart:
 
         # Step 5 - Offcourse, output the summarize texr
         #print("Summarize Text: \n", ". ".join(summarize_text))
-        return "Summarize Text: ", ". ".join(summarize_text)
+        return self.__langu,"Summarize Text: ", ". ".join(summarize_text)
+
 
 

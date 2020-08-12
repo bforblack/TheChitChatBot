@@ -8,6 +8,6 @@ app = Flask(__name__)
 def summary():
     dataJson=request.json
     c=engine.NlpEngineStart(dataJson['data'])
-    return c.summary()
+    return jsonify("responce",c.summary())
 
 app.run()
